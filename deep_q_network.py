@@ -15,7 +15,7 @@ from collections import deque
 
 parser = argparse.ArgumentParser(description='Train a Deep-Q-Network')
 parser.add_argument('-g', '--game', help='Name of game')
-parser.add_argument('-na', '--num_actions', help='Number of actions')
+parser.add_argument('-na', '--num_actions', type=int, help='Number of actions')
 args = parser.parse_args()
 
 GAME = args.game # the name of the game being played for log files
