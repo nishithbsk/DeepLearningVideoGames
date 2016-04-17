@@ -2,17 +2,24 @@
 
 import tensorflow as tf
 import cv2
+import os
 import sys
-sys.path.append("Wrapped Game Code/")
+sys.path.append("game_code/")
 import pong_fun # whichever is imported "as game" will be used
 import dummy_game
 import tetris_fun as game
 import random
 import numpy as np
+import argparse
 from collections import deque
 
-GAME = 'tetris' # the name of the game being played for log files
-ACTIONS = 6 # number of valid actions
+parser = argparse.ArgumentParser(description='Train a Deep-Q-Network')
+parser.add_argument('-g', '--game', help='Name of game')
+parser.add_argument('-na', '--num_actions', help='Number of actions')
+args = parser.parse_args()
+
+GAME = args.game # the name of the game being played for log files
+ACTIONS = args.num_actions # number of valid actions
 GAMMA = 0.99 # decay rate of past observations
 OBSERVE = 500. # timesteps to observe before training
 EXPLORE = 500. # frames over which to anneal epsilon
@@ -91,8 +98,11 @@ def trainNetwork(s, readout, h_fc1, sess):
     D = deque()
 
     # printing
-    a_file = open("logs_" + GAME + "/readout.txt", 'w')
-    h_file = open("logs_" + GAME + "/hidden.txt", 'w')
+    logdir = "logs_" + GAME
+    if not os.path.exists(logdir):
+        os.makedirs(logdir)
+    a_file = open(logdir + "/readout.txt", 'w')
+    h_file = open(logdir + "/hidden.txt", 'w')
 
     # get the first state by doing nothing and preprocess the image to 80x80x4
     do_nothing = np.zeros(ACTIONS)
@@ -114,7 +124,7 @@ def trainNetwork(s, readout, h_fc1, sess):
 
     epsilon = INITIAL_EPSILON
     t = 0
-    while "pigs" != "fly":
+    while True:
         # choose an action epsilon greedily
         readout_t = readout.eval(feed_dict = {s : [s_t]})[0]
         a_t = np.zeros([ACTIONS])
